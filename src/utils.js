@@ -3,8 +3,10 @@ import isEmpty from 'lodash/isEmpty'
 import has from 'lodash/has'
 import omit from 'lodash/omit'
 import isPlainObject from 'lodash/isPlainObject'
-import { buildQueryParams } from '../queryParams'
+import uniq from 'lodash/uniq'
+import QueryParams from './queryParams'
 import flatMapDeep from 'lodash/flatMapDeep'
+const QS = new QueryParams()
 
 export function clearParams(endpoint, params) {
   let keys = pathToRegexp(endpoint).keys
@@ -15,13 +17,15 @@ export function clearParams(endpoint, params) {
   return omit(params, keys)
 }
 
-export function buildUrl(baseURL, endpoint, params, paramsSerializer = buildQueryParams) {
+export function buildUrl(baseURL, endpoint, params, paramsSerializer = QS.buildQueryParams) {
   if(typeof endpoint !== 'string') {
     throw new Error('enpoint param should be a string')
   }
+
   if(!isEmpty(params) && typeof params !== 'object') {
     throw new Error('params should be an object')
   }
+
   if(/\/:/.test(endpoint)) {
     params = clearParams(endpoint, params)
     endpoint = pathToRegexp.compile(endpoint)(params)
@@ -53,20 +57,13 @@ export function mergeConfigs(configs = {}, defaultConfigs) {
   if(isEmpty(configs)) {
     return defaultConfigs
   }
-
-
-  const resultes = Object.entries(defaultConfigs).reduce(function(res, [key, value]) {
-    if(typeof value === 'object' && value.constructor.name === 'Object') {
-      return {
-        ...res,
-        [key]: mergeConfigs(configs[key], defaultConfigs[key]),
-      }
-    }
+  const keys = uniq([ ...Object.keys(configs), ...Object.keys(defaultConfigs) ])
+  const resultes = keys.reduce(function(res, key) {
     return {
       ...res,
-      [key]: configs[key] || value,
+      [key]: configs[key] || defaultConfigs[key],
     }
-  }, configs)
+  }, {})
 
   return resultes
 }

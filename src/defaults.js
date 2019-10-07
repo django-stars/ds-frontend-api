@@ -7,10 +7,7 @@ const QS = new QueryParams()
 
 export default {
   baseURL: '',
-  headers: {},
-  cache: 'default',
-  credentials: 'same-origin',
-  mode: undefined,
+  headers: { 'Content-Type': 'application/json' },
   paramsSerializer: QS.buildQueryParams,
   isMultipartFormData: hasFile,
   interceptors: {

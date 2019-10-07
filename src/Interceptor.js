@@ -21,9 +21,9 @@ export default class Interceptor {
     if(!!onError && typeof onError !== 'function') {
       throw new Error('error interceptor shoud be a functoin')
     }
-    this.onSuccess = [...this.onSuccess, onSuccess].filter(Boolean)
-    this.onError = [...this.onError, onError].filter(Boolean)
-    return this.removeInterceptor(onSuccess, onError)
+    this.onSuccess = [ ...this.onSuccess, onSuccess ].filter(Boolean)
+    this.onError = [ ...this.onError, onError ].filter(Boolean)
+    return this.removeInterceptor(onSuccess, onError).bind(this)
   }
 
   run(data) {
@@ -33,6 +33,7 @@ export default class Interceptor {
 
   err(data) {
     return Promise.resolve(compose(...this.onError)({ ...data }))
+      .then(data => this.finalIterceptor ? this.finalIterceptor(data) : data)
   }
 
   removeInterceptor(onSuccess, onError) {

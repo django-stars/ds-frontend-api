@@ -1,5 +1,5 @@
 {
-  "name": "api",
+  "name": "ds-api",
   "version": "1.0.0",
   "description": "Promise based HTTP client for browsers and React-Native based on fetch API",
   "scripts": {

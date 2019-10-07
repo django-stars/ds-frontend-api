@@ -7,8 +7,9 @@ import has from 'lodash/has'
 export default class QS {
   constructor(camelCaseValues = []) {
     this.camelCaseValues = camelCaseValues
+    this.buildQueryParams = this.buildQueryParams.bind(this)
+    this.parseQueryParams = this.parseQueryParams.bind(this)
   }
-
   isCamelCaseTrasformNeeded(name) {
     return Array.isArray(this.camelCaseValues) &&
       !isEmpty(this.camelCaseValues) &&
@@ -24,7 +25,7 @@ export default class QS {
       .slice(1)
       .join('?')
       .split('&')
-      .reduce(function(params, param) {
+      .reduce((params, param) => {
         let [name, value] = decodeURIComponent(param.replace('+', '%20')).split('=') // TODO: why do we need replace('+', '%20')?
         name = camelCaseParam(name)
         if(this.isCamelCaseTrasformNeeded(name)) {
@@ -42,22 +43,21 @@ export default class QS {
         }
       }, {})
   }
-
   buildQueryParams(params) {
     if(isEmpty(params)) {
       return ''
     }
-    return Object.entries(params).reduce(function(res, [key, value]) {
+    return Object.entries(params).reduce((res, [key, value]) => {
       if(value === null || value === undefined || value === '') {
         return res
       }
       if(!Array.isArray(value)) {
         value = [value]
       }
-      const _key = snakeCaseParam(key)
+      let _key = snakeCaseParam(key)
       const values = value
         .filter(val => String(val).length > 0)
-        .map(function(val) {
+        .map((val) => {
           if(this.isCamelCaseTrasformNeeded(key)) {
             val = snakeCaseParam(val)
           }
@@ -70,7 +70,7 @@ export default class QS {
 
 
 export function camelCaseParam(name) {
-  const parts = name.split('__')
+  let parts = name.split('__')
   name = camelCase(parts.shift())
   if(parts.length === 0) {
     return name
@@ -79,7 +79,7 @@ export function camelCaseParam(name) {
 }
 
 export function snakeCaseParam(name) {
-  const parts = name.split('[')
+  let parts = name.split('[')
   name = snakeCase(parts.shift())
 
   if(parts.length === 0) {
