@@ -1,54 +1,46 @@
 import defaultConfigs from './defaults'
 import get from 'lodash/get'
 import has from 'lodash/has'
+import omit from 'lodash/omit'
 import { buildUrl, mergeConfigs } from './utils'
 
 
-class API {
+export default class API {
   constructor(configs) {
-    this.defaults = mergeConfigs(configs, defaultConfigs)
+    const options = mergeConfigs(configs, defaultConfigs)
+    this.options = omit(options, 'interceptors')
+    this.interceptors = options.interceptors
   }
-
-  request(configs) {
-    let {
-      baseURL,
-      endpoint,
+  request(requestParams) {
+    const {
+      baseURL = this.options.baseURL,
+      endpoint = '',
       params,
-      paramsSerializer,
-      method,
-      headers,
-      body,
-      credentials,
-      cache,
-      mode,
-      signal,
-      isMultipartFormData,
-      interceptors,
-      prepareBody,
-    } = mergeConfigs(configs, this.defaults)
-    const resource = buildUrl(baseURL, endpoint, params, paramsSerializer)
-    const _headers = new Headers({
-      ...this.defaults.headers,
-      ...headers,
-    })
-    const _isMultipartFormData = isMultipartFormData(body)
+      method = 'GET',
+      headers = {},
+      body = {},
+      ...restOptions
+    } = requestParams
+    const url = buildUrl(baseURL, endpoint, params, this.options.paramsSerializer)
+    const _headers = new Headers(Object.assign({}, this.options.headers, headers))
+    const _isMultipartFormData = this.options.isMultipartFormData(body)
     if(_isMultipartFormData) {
       _headers.set('Content-Type', 'multipart/form-data')
     }
 
-    body = method === 'GET' ? undefined : prepareBody(Object.assign({}, body), _isMultipartFormData)
+    const fetchParams = Object.assign({}, restOptions || {}, omit(this.options, Object.keys(defaultConfigs)))
+
+    let _body = method === 'GET' ? undefined : this.options.prepareBody(Object.assign({}, body), _isMultipartFormData)
     const options = {
       method,
       headers: _headers,
-      body,
-      signal,
-      cache,
-      credentials,
-      mode,
+      body: _body,
+      ...fetchParams,
     }
-    return interceptors.request.run({ url: resource, ...options })
+
+    return this.interceptors.request.run({ ...options, url })
       .catch(error => {
-        return interceptors.request.err({ data: { url: resource, ...options }, error })
+        return this.interceptors.request.err({ ...options, url, error })
       })
       .then(({ url, ...opts }) => {
         const request = new Request(url, opts)
@@ -64,16 +56,15 @@ class API {
         return Promise.reject(data)
       })
       .then(data => {
-        return interceptors.response.run(data)
+        return this.interceptors.response.run(data)
       })
       .catch(err => {
         if(get(err, 'code') === 20) {
-          return Promise.reject(err)
+          return Promise.reject({ errors: { code: err.code, message: err.message, name: err.name } })
         }
-        return interceptors.response.err(err)
+        return this.interceptors.response.err(err)
       })
   }
-
   get(endpoint, params = {}) {
     return this.request(makeParams(endpoint, params, 'GET'))
   }
@@ -128,9 +119,6 @@ function makeBodyParams(url, body = {}, params = {}, method) {
   return { ...(url || {}), body, method }
 }
 
-export default function createInstance(configs) {
-  return new API(configs)
-}
 
 function handleResponseCallback(response) {
   if(response && response.headers && response.headers.get && (response.headers.get('Content-Type') || '').includes('application/json')) {
