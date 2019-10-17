@@ -107,7 +107,7 @@ function checkUrl(url, params = {}) {
   if(typeof url === 'object' && !has(url, 'endpoint')) {
     throw new Error(`endpoint is required but got: ${url.endpoint}`)
   }
-  if(typeof url === 'string' && !has(params, 'endpoint')) {
+  if(typeof url === 'string' && !url) {
     throw new Error(`endpoint is required but got: ${params.endpoint}`)
   }
 }
