@@ -1,4 +1,4 @@
-import { pathToRegexp, compile } from 'path-to-regexp'
+import { parse, compile } from 'path-to-regexp'
 import isEmpty from 'lodash/isEmpty'
 import has from 'lodash/has'
 import omit from 'lodash/omit'
@@ -9,7 +9,7 @@ import flatMapDeep from 'lodash/flatMapDeep'
 const QS = new QueryParams()
 
 export function clearParams(endpoint, params) {
-  let keys = pathToRegexp(endpoint).keys
+  let keys = parse(endpoint) || []
   if(isEmpty(keys)) {
     return params
   }
