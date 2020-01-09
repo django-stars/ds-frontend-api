@@ -9,8 +9,7 @@
     "prepublishOnly": "yarn clean && yarn build"
   },
   "peerDependencies": {
-    "lodash": "^4.17.5",
-    "path-to-regexp": "^3.0.0"
+    "lodash": "^4.17.5"
   },
   "files": [
     "LICENSE",
@@ -54,9 +53,11 @@
     "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-standard": "^4.0.1",
     "lodash": "^4.17.5",
-    "path-to-regexp": "^3.0.0",
     "react-redux": "^7.1.0",
     "redux": "^3.7.2",
     "rxjs": "^5.5.7"
+  },
+  "dependencies": {
+    "path-to-regexp": "^6.1.0"
   }
 }
