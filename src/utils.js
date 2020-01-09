@@ -1,4 +1,4 @@
-import pathToRegexp from 'path-to-regexp'
+import { pathToRegexp, compile } from 'path-to-regexp'
 import isEmpty from 'lodash/isEmpty'
 import has from 'lodash/has'
 import omit from 'lodash/omit'
@@ -28,7 +28,7 @@ export function buildUrl(baseURL, endpoint, params, paramsSerializer = QS.buildQ
 
   if(/\/:/.test(endpoint)) {
     params = clearParams(endpoint, params)
-    endpoint = pathToRegexp.compile(endpoint)(params)
+    endpoint = compile(endpoint)(params)
   }
   const queryParams = isEmpty(params) ? '' : `?${paramsSerializer(params)}`
   return `${baseURL}${endpoint}/${queryParams}`
@@ -57,7 +57,7 @@ export function mergeConfigs(configs = {}, defaultConfigs) {
   if(isEmpty(configs)) {
     return defaultConfigs
   }
-  const keys = uniq([ ...Object.keys(configs), ...Object.keys(defaultConfigs) ])
+  const keys = uniq([...Object.keys(configs), ...Object.keys(defaultConfigs)])
   const resultes = keys.reduce(function(res, key) {
     return {
       ...res,
