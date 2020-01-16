@@ -25,7 +25,7 @@ export default class API {
     const _headers = new Headers(Object.assign({}, this.options.headers, headers))
     const _isMultipartFormData = this.options.isMultipartFormData(body)
     if(_isMultipartFormData) {
-      _headers.set('Content-Type', 'multipart/form-data')
+      _headers.delete('Content-Type')
     }
 
     const fetchParams = Object.assign({}, restOptions || {}, omit(this.options, Object.keys(defaultConfigs)))
